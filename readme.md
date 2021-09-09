@@ -255,6 +255,17 @@ array[orange]=2000
 
 ## 流程控制
 
+#### 逻辑运算符
+
+使用流程控制比较重要的是判断某个条件是否成立，其中比较重要的就是逻辑运算，在shell中，逻辑运算为以下几个:
+
+* -lt 表示less then，即小于号
+* -gt 表示greater then，即大于号
+* -le 表示less equal，即小于等于
+* -ge 表示greater equal大于等于
+
+#### if
+
 其中的代表就是if语句，shell中的if语句语法
 
 ```shell
@@ -278,6 +289,143 @@ then
 else
     其余
 fi
+```
+
+#### case
+
+除了if流程控制，还有case控制，每条命令以`;;`结束。
+
+```shell
+value=1
+case $value in
+1)
+    条件为1时执行
+;;
+2) 
+    条件为2时执行
+;;
+*)
+    默认
+;;
+esac
+```
+
+## 循环
+
+shell循环有2种，为for和while循环
+
+#### for
+
+```shell
+for value in loop
+do
+    命令1
+    命令2
+done
+```
+
+```shell
+key=("Hello" "World" "Swagger")
+for str in ${key[*]}
+do 
+    echo $str
+done
+# 以上命令将遍历数组key
+```
+
+#### while
+
+对于while语句则和普通的程序无多大差异，具体语法如下:
+
+```shell
+while [ 条件 ]
+do
+    循环语句
+done
+```
+
+```shell
+index=1
+while [ index -lt 10 ]
+do
+    echo $index
+    index=${index} + 1
+done
+```
+
+shell中还有一个和while相反的关键字，即until，它更像C中的do{}while语句，一般用到的比较少。
+
+#### break和continue
+
+既然有了循环，那么肯定需要有一个跳出循环的关键字，即break和continue，其中使用方法和一般编程语言完全一致，只不过break语句这里可以控制跳出几层循环。
+
+```shell
+index=1
+cur=1
+while [ $index -lt 10 ]
+do
+    while [ $cur -lt 10 ]
+    do
+    echo $cur
+    cur=`expr $cur + 1`
+    if [ $cur -eq 5 ]
+    then
+        break 2
+    fi
+    done
+done
+```
+
+## 函数
+
+#### 函数的简单语法
+
+shell中也是有函数的，函数可以提高代码的利用率，一个简单的函数语法如下:
+
+```shell
+function func1(){
+    echo "Hello World"
+}
+
+func1 # call
+```
+
+对于shell，你可以添加function关键字来表明这是一个函数，也可以直接省略不写。
+
+shell规定，函数返回值只能是数字，如果没有制定return值，则默认返回函数中最后一条指令执行的返回码(0为正确，1为错误)。
+
+并且，对于返回值，shell和其他语言不同，不可以直接使用`return_value=function`这种形式来进行获取返回值，而是应该使用`$?`来获取。
+
+```shell
+function add(){
+    read num1 # 获取一个输入的数字
+    read num2
+    return `expr $num1 + $num2`
+}
+add
+return_value=$?
+echo $return_value
+```
+
+#### 函数传参
+
+shell中的函数当然也可以传入参数，并且和当初用到的特殊变量使用方法非常的像
+
+* $# 表示函数参数个数
+* $* 表示所有函数参数
+* ${n} 表示对应index的参数值
+
+一般而言，我们可以直接使用`$n`来进行获取对应index的参数值，但是，当这个n太过于大的时候(n>=10)，我们需要使用`${n}`来进行函数参数获取
+
+```shell
+function hello(){
+    echo "Hello $1"
+    if [ $# -gt 1 ]
+    then 
+        echo "Hello $2"
+    fi
+}
+hello Swagger 0xmodN # call
 ```
 
 
