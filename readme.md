@@ -85,9 +85,11 @@ echo $PATH
 `$UID`变量表示当前运行的id号，0为root。
 `$?` 变量表示上一条命令执行完后的返回值，正常为0
 
-## 编程基础
+# 编程基础
 
-#### 变量
+## 变量
+
+#### 变量的创建
 
 shell中的变量赋值不能使用空格
 ```shell
@@ -95,24 +97,114 @@ var = "value" # 错误，这是编程中的双等于操作
 var="value" # 正确
 ```
 
-输出变量可以在前面加上 $符号，这点类似php。当然也可以加上{}
+输出变量可以在前面加上 $符号，这点类似php。
 
 ```shell
-echo $var
+echo $var 
 echo ${var}
 ```
 
-```shell
-#!/bin/bash
+当然也可以加上`{}`，最好是加上`{}`，因为这样可以用于区分是否是不是变量，况且shell是通过空格来区分变量结束的，如果你想使用变量又不想加入空格，那么你只能添加`{}`。
 
-fruit=apple
-count=5
-echo "we have $count $fruit s" # 这里的$fruit不能和s和在一起
-# shell使用空格来区分变量，或者需要使用{}将变量扩起来
-echo "we have $count ${fruit}s"
+```shell
+language=Java
+echo "this language is $JavaScript" # shell将整个看作变量，则找不到对应变量
+echo "this language is ${Java}Script"
 ```
 
-获取字符串长度
+这里还需要扯到一个`''`和`""`的区别。
+
+对于单引号，shell在解析其中的字符的时候是真的把它当成字符串， __不会去解析任何东西__ 。
+
+对于双引号，shell将 __先解析出双引号中的变量__ ，之后才会将整个双引号扩起来的对象看成字符串。
+
+```shell
+name=Swagger
+echo 'Hello $name' # Hello $name
+echo "Hello $name" # Hello Swagger
+```
+
+我们还可以将一个命令的结果，作为一个变量的初始化值。其语法为`key=$(cammand)`
+
+```shell
+file_list=$(ls)
+echo "in this dir, we got file: ${file_list}"
+
+# 第二种语法
+file_list=`ls`
+```
+
+#### 变量的相加
+
+对于数字形的字符串可以进行相加，建议使用`expr`命令进行相加。
+
+```shell
+# 基本语法 key=`expr 变量 + 变量` 其中需要空格隔开符号+
+key=`expr 1 + 2`
+key=`expr $value1 + $value2`
+```
+
+其中运算符号有很多，比如`-`，`/`，`\*`，等等，其中乘运算符号需要加上反斜杠去掉原来意思，还有一个`=`运算符号，当`变量 = 变量2`中有空格时，`=`为比较符号，即编程语言中的`==`符号， __以上都是在expr这个命令的前提下__ 。
+
+#### 变量的后续操作
+
+跟其他语言一样，变量创建后，我们可以对其进行修改。
+
+```shell
+key=1
+key=2 # key修改为2
+```
+
+同时，变量也存在只读变量，通过readonly，我们将变量设置为只读，后续对其进行修改将有错误信息，但不会中断整个操作流程。
+
+```shell
+key='this value cant be change'
+readonly key
+```
+
+既然变量创建了，那么我们也可以将其销毁，使用`unset`将变量进行销毁。
+
+```shell
+key='this value has init....'
+unset key
+```
+
+#### 变量的特殊操作
+
+写过C的应该都知道其主函数
+
+```C
+int main(int argc, char* argv);
+```
+
+shell中也有类似的参数，用于获取传递给脚本的参数
+
+* $$ 当前文件的进程ID
+* $0 表示本文件名字
+* $# 表示本文件运行时获取的参数的数量
+* $n n表示某个数字，意思为某个参数的索引，类似C中argv[n]这个操作
+* $? 则表示上个命令的推出状态，也可作为函数返回值
+
+```shell
+echo "this file name call $0"
+echo "recv $# args"
+echo "argv 1 call $1"
+```
+
+#### 变量中的替换
+
+前文提到的单引号和双引号的区别就在于此，单引号不会进行替换，而双引号会将字符串先进行变量解析和替换才会将其视为变量值，其中`\r\n这种也是属于可替换的符号，只不过需要使用-e进行指定`
+
+```shell
+echo 'Hello World\n' # 输出就为Hello World\n
+echo "Hello World\n" # 输出就为Hello World\n
+echo -e 'Hello World\n' # 输出就为Hello World + 换行符
+echo -e "Hello World\n" # 输出就为Hello World + 换行符
+```
+
+#### 变量中字符串的一些操作
+
+获取字符串长度，#一般在shell中都表示长度的意思，不管是`${#key}`，还是`$#`。
 
 ```shell
 #!/bin/bash
@@ -121,16 +213,13 @@ echo $length
 echo ${#length} # 11
 ```
 
-变量的相加和改变
+提取子字符串，类似于切片，语法为${key:起始索引:长度}
 
 ```shell
-num1=4
-num2=5
-let res=num1+num2 # 在let命令下不加$符号
-let num1++ # 自增
-let num1+=6 # 增6
-res=$[ num1 + num2 ] # 在[]情况下要家$符号
+str="0123456789"
+echo ${str:3:4} # 3456
 ```
+
 
 #### 数组
 
@@ -150,7 +239,9 @@ array[3]=test4 # 这也是一种方法
 # chapter01/1.8.sh 例子
 echo ${array[1]} # 打印索引值为1的值
 echo ${array[*]} # 打印数组中全部值
+
 echo ${#array[*]} # 打印数组长度
+echo ${#array[n]} # 打印某个数组元素的长度
 ```
 
 除此之外，还有关联数组，就是类似Redis的key-value数组
@@ -161,6 +252,35 @@ array[apple]=1000
 array[orange]=2000
 # 其他使用方式和普通数组一致
 ```
+
+## 流程控制
+
+其中的代表就是if语句，shell中的if语句语法
+
+```shell
+if [ 条件 ]
+then
+    条件为true需要执行的内容
+else 
+    条件为false需要执行的内容
+if
+```
+
+其中嵌套的还有
+
+```shell
+if [ 条件 ]
+then 
+    条件为true需要执行的
+elif [ 条件2 ]
+then
+    条件2为true需要执行的内容
+else
+    其余
+fi
+```
+
+
 
 #### 时间
 
