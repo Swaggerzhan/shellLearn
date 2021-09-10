@@ -58,4 +58,42 @@ cut -d ":" -f 1 test_file2.txxt
 
 对于单空格，可以用cut来进行区分，但是对于多空格，cut就不好使用了。
 
+# Linux三剑客
+
+## awk
+
+其主要格式是
+
+```shell
+awk [options] 'script' file.data
+```
+
+对于这个格式，先看一个比较简单的格式
+
+```shell
+awk 'BEGIN{} PATTERN{} END{}' file.data
+```
+
+BEGIN对应初始化，只会执行一次，END对应结尾，也是只会执行一次，而PATTERN中的指令执行次数则取决于输入行数。
+
+假设一个文件
+
+```
+Swagger 100
+0xmodN 200
+Bob 300
+Alice 20
+Linux 40
+Windows 20
+C++ 300
+```
+
+使用对应的脚本
+
+```shell
+cat data.file | awk -F " " '{sum+=$2} END{print sum}'
+```
+
+其中指令部分的`{}`，一定要用单引号来扩起，这里跟shell的语法刚好相反。其中`$`同样表示特殊变量，其变量不像shell中的所有变量一样都需要使用`$`，只有特殊变量需要用到，其余都不需要，就像上例中的`sum`。上例中的`-F`则是对应的`[options]`的选项，`-F`为field，后面跟对应的域，表示的是区分的方法，`-F " "`，则表示用空格区分列，`-F ":"`则表示用`:`区分列。
+
 
